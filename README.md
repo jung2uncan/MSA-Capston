@@ -270,6 +270,7 @@ if(this.getStatus().equals("reqCancel")) {
 - 메시지 서비스는 영화 등록 및  예약/결제와 완전히 분리되어있으며, 이벤트 수신에 따라 처리되기 때문에, 메시지 서비스가 장애 상태 라도 영화 등록 및  예약을 받는데 문제가 없다.
 
 
+
 ***#메시지 서비스 (message) 기동 안 한 상태***
 
 ```
@@ -299,6 +300,7 @@ http GET localhost:8088/reservations    #메시지 서비스와 상관없이 예
 -------------------------
 ####  - Polyglot
 *payment MicroService의 경우 Database 'HSQL'사용*
+
 ![payment DB HSQL 사용](https://user-images.githubusercontent.com/74287598/162151005-58aacce3-6f33-44be-a08c-5eab7019871c.JPG)
 
 ```
