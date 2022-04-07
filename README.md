@@ -5,10 +5,15 @@
 
 # Table of contents
  - **예제 - 🎥영화예약하기 (Cinema)**
+		
 		- 서비스 시나리오
+		
 		- Check Potint
+		
 		- 분석/설계
+		
 		- 구현 
+		
 		- 운영
 
 
@@ -132,6 +137,7 @@
 ![whenPaymentApproved_then_UPDATE_3](https://user-images.githubusercontent.com/74287598/162135714-78ceb114-775e-4efd-ae1d-8f746b4ea0a2.JPG)
 
 -    Repository Pattern 을 적용하여 JPA 를 통하여 다양한 데이터소스 유형 (RDB or NoSQL) 에 대한 별도의 처리가 없도록 데이터 접근 어댑터 개발 및 자동 생성
+
 ![Repository Pattern_JPA](https://user-images.githubusercontent.com/74287598/162201496-2d97d08b-6b3c-4787-9126-0c806f0a1c50.JPG)
 
 
@@ -198,6 +204,7 @@ root@labs--2065963007:/home/project# /usr/local/kafka/bin/kafka-console-consumer
 ----------
 #### - Req / Resp
  *FeignClient 적용*
+
 ![FeignClient](https://user-images.githubusercontent.com/74287598/162142655-39b644a0-77e4-4847-9557-a0976a711a48.JPG)
 
 -----------
