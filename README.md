@@ -295,6 +295,7 @@ http GET localhost:8088/reservations    #메시지 서비스와 상관없이 예
 ----------------
 #### - Gateway
 *gateway application.yaml*
+
 ![gateway_application_yaml파일](https://user-images.githubusercontent.com/74287598/162144121-93987952-74d1-4df6-b1d2-e7a00813fe36.JPG)
 
 -------------------------
