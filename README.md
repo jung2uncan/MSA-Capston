@@ -175,7 +175,7 @@ http PATCH localhost:8088/reservations/1 status=reqCancel
 ![예약취소](https://user-images.githubusercontent.com/74287598/162140502-82922cf7-46d4-483b-a51a-3f187f3a12d0.JPG)
 
 4) 예약 취소 후, 결재 상태 변경
-5) 
+ 
 ![예약 취소 후 결재 상태 변경](https://user-images.githubusercontent.com/74287598/162140510-32ff2847-a5ea-4fae-a593-76120a4a2853.JPG)
 
 ![예약취소2](https://user-images.githubusercontent.com/74287598/162141479-72171540-73e7-4a37-9ce8-ce946bc2d5d0.JPG)
@@ -335,6 +335,7 @@ Hibernate:
 - Kubernetes용 Deployment.yaml 을 작성하고 Kubernetes에 Deploy를 생성
 
 *deployment.yml*
+
 ![deployment yaml](https://user-images.githubusercontent.com/74287598/162158476-65cdf8d0-96b9-421f-9dd8-5b1eca75424e.JPG)
 
 ```
