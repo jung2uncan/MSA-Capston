@@ -118,6 +118,7 @@
 영화(Movie) 의 예약가능 여부, 리뷰 및 예약/결재 등 총 Status 에 대하여 고객(Customer)이 조회 할 수 있도록 CQRS 로 구현하였다. 
 
   *MovieView*
+
 ![MovieView_Table](https://user-images.githubusercontent.com/74287598/162131283-aa24351e-c6f0-4855-a901-4b40c861356b.JPG)
 
 - 영화가 새로 등록되었을 때,  viewpage의 ViewHandler를 통해 새로운 영화 객체 생성
@@ -168,7 +169,9 @@ http PATCH localhost:8088/reservations/1 status=reqCancel
 ![예약취소](https://user-images.githubusercontent.com/74287598/162140502-82922cf7-46d4-483b-a51a-3f187f3a12d0.JPG)
 
 4) 예약 취소 후, 결재 상태 변경
+5) 
 ![예약 취소 후 결재 상태 변경](https://user-images.githubusercontent.com/74287598/162140510-32ff2847-a5ea-4fae-a593-76120a4a2853.JPG)
+
 ![예약취소2](https://user-images.githubusercontent.com/74287598/162141479-72171540-73e7-4a37-9ce8-ce946bc2d5d0.JPG)
 
 #### *Kafka consumer 이벤트 모니터링*
