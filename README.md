@@ -122,10 +122,12 @@
 
 - 영화가 새로 등록되었을 때,  viewpage의 ViewHandler를 통해 새로운 영화 객체 생성
 ("MovieRegisterd" 이벤트 발생 시, Pub/Sub 기반으로 MovieView 테이블에 정보 저장)
+
 ![whenMovieRegistered_then_CREATE_1](https://user-images.githubusercontent.com/74287598/162131739-a624033b-4813-4095-9911-6b659607db55.JPG)
 
 - 결재가 승인되었을 때,  viewpage의 ViewHandler를 통해 해당 영화예약 정보 업데이트
 ("PaymentApproved" 이벤트 발생 시, Pub/Sub 기반으로 MovieView 테이블에 정보 업데이트)
+
 ![whenPaymentApproved_then_UPDATE_3](https://user-images.githubusercontent.com/74287598/162135714-78ceb114-775e-4efd-ae1d-8f746b4ea0a2.JPG)
 
 -    Repository Pattern 을 적용하여 JPA 를 통하여 다양한 데이터소스 유형 (RDB or NoSQL) 에 대한 별도의 처리가 없도록 데이터 접근 어댑터 개발 및 자동 생성
