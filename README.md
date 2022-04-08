@@ -450,8 +450,175 @@ buildspec.yml 파일
 ----------------------
 
 #### Circuit Breaker
+시나리오는 예약(reservation)--> 결재(payment) 시의 연결을 RESTful Request/Response 로 연동하여 구현이 되어있고, 예약 요청이 과도할 경우 CB 를 통하여 장애격리.
 
+```yaml
+# DestinationRule 를 생성하여 circuit break 가 발생할 수 있도록 설정 최소 connection pool 설정 
+# cmd 터미널 창에 입력
+kubectl apply -f - << EOF
+  apiVersion: networking.istio.io/v1alpha3
+  kind: DestinationRule
+  metadata:
+    name: dr-payment
+    namespace: cinema
+  spec:
+    host: payment
+    trafficPolicy:
+      outlierDetection:
+        consecutive5xxErrors: 1
+        interval: 1s
+        baseEjectionTime: 3m
+        maxEjectionPercent: 100
+EOF
+```
 
+-  Circuit Breaker 테스트 환경 설정
+```
+kubectl scale deploy payment --replicas=3
+```
+```
+root@labs--2065963007:/home/project# kubectl get pod -o wide -n cinema
+NAME                           READY   STATUS    RESTARTS   AGE     IP               NODE                                                NOMINATED NODE   READINESS GATES
+payment-5bcbc89f89-fs2ph   2/2     Running   0          147m    192.168.65.180   ip-192-168-64-163.ap-northeast-2.compute.internal   <none>           <none>
+payment-5bcbc89f89-hrsm9   2/2     Running   0          4s      192.168.27.166   ip-192-168-0-247.ap-northeast-2.compute.internal    <none>           <none>
+payment-5bcbc89f89-pzqpx   2/2     Running   0          4s      192.168.50.150   ip-192-168-39-51.ap-northeast-2.compute.internal    <none>           <none>
+siege-75d5587bf6-mpg9f         2/2     Running   0          4h28m   192.168.39.181   ip-192-168-39-51.ap-northeast-2.compute.internal    <none> 
+```
+
+- Siege 접속
+```
+#Siege 접속
+kubectl create deploy siege --image=ghcr.io/acmexii/siege-nginx:latest
+kubectl exec -it pod/siege-75d5587bf6-mpg9f -n cinema -- /bin/bash
+```
+
+- Circuit Breaker 동작 확인
+```
++root@siege-75d5587bf6-fns4p:/# http http://payment:8080/actuator/echo
+- HTTP/1.1 200 OK
+content-length: 39
+content-type: application/hal+json;charset=UTF-8
+date: Fri, 08 Apr 2022 04:21:39 GMT
+server: envoy
+x-envoy-upstream-service-time: 215
+
+payment-5bcbc89f89-fs2ph/192.168.65.180 
+
+root@siege-75d5587bf6-fns4p:/# http http://payment:8080/actuator/echo
+HTTP/1.1 200 OK
+content-length: 40
+content-type: application/hal+json;charset=UTF-8
+date: Fri, 08 Apr 2022 04:21:40 GMT
+server: envoy
+x-envoy-upstream-service-time: 16
+
+payment-5bcbc89f89-hrsm9/192.168.27.166
+
+root@siege-75d5587bf6-fns4p:/# http http://payment:8080/actuator/echo
+HTTP/1.1 200 OK
+content-length: 40
+content-type: application/hal+json;charset=UTF-8
+date: Fri, 08 Apr 2022 04:21:41 GMT
+server: envoy
+x-envoy-upstream-service-time: 25
+
+payment-5bcbc89f89-pzqpx/192.168.50.150
+```
+
+- Siege 실행 
+ 3개중 1개의 컨테이너로 접속하여 명시적으로 5xx 오류를 발생
+
+```
+# 새로운 터미널 Open
+# 3개 중 하나의 컨테이너에 접속
+kubectl exec -it pod/payment-5bcbc89f89-pzqpx -c payment -- /bin/sh
+#
+# httpie 설치 및 서비스 명시적 다운
+apk update
+apk add httpie
+- http PUT http://localhost:8080/actuator/down
+```
+
+-   Siege로 접속한 이전 터미널에서 payment 서비스로 접속해 3회 이상 호출
+
+```
+http GET http://payment:8080/actuator/health
+```
+-   아래 URL을 통해 3개 중  `2개`의 컨테이너만 서비스 됨을 확인
+```
++root@siege-75d5587bf6-fns4p:/# http http://payment:8080/actuator/echo
+- HTTP/1.1 200 OK
+content-length: 39
+content-type: application/hal+json;charset=UTF-8
+date: Fri, 08 Apr 2022 06:15:21 GMT
+server: envoy
+x-envoy-upstream-service-time: 215
+
+payment-5bcbc89f89-fs2ph/192.168.65.180
+
+root@siege-75d5587bf6-fns4p:/# http http://payment:8080/actuator/echo
+HTTP/1.1 200 OK
+content-length: 40
+content-type: application/hal+json;charset=UTF-8
+date: Fri, 08 Apr 2022 06:15:22 GMT
+server: envoy
+x-envoy-upstream-service-time: 16
+
+payment-5bcbc89f89-hrsm9/192.168.27.166
+
+root@siege-75d5587bf6-fns4p:/# http http://payment:8080/actuator/echo
+HTTP/1.1 200 OK
+content-length: 40
+content-type: application/hal+json;charset=UTF-8
+date: Fri, 08 Apr 2022 06:15:23 GMT
+server: envoy
+x-envoy-upstream-service-time: 25
+
+payment-5bcbc89f89-fs2ph/192.168.65.180
+
+root@siege-75d5587bf6-fns4p:/# http http://payment:8080/actuator/echo
+HTTP/1.1 200 OK
+content-length: 40
+content-type: application/hal+json;charset=UTF-8
+date: Fri, 08 Apr 2022 06:15:24 GMT
+server: envoy
+x-envoy-upstream-service-time: 16
+
+payment-5bcbc89f89-hrsm9/192.168.27.166
+```
+
+-   Pool Ejection 타임(3’) 경과후엔 컨테이너 3개가 모두 동작됨이 확인
+```
++root@siege-75d5587bf6-fns4p:/# http http://payment:8080/actuator/echo
+- HTTP/1.1 200 OK
+content-length: 39
+content-type: application/hal+json;charset=UTF-8
+date: Fri, 08 Apr 2022 06:15:21 GMT
+server: envoy
+x-envoy-upstream-service-time: 215
+
+payment-5bcbc89f89-fs2ph/192.168.65.180
+
+root@siege-75d5587bf6-fns4p:/# http http://payment:8080/actuator/echo
+HTTP/1.1 200 OK
+content-length: 40
+content-type: application/hal+json;charset=UTF-8
+date: Fri, 08 Apr 2022 06:15:22 GMT
+server: envoy
+x-envoy-upstream-service-time: 16
+
+payment-5bcbc89f89-hrsm9/192.168.27.166
+
+root@siege-75d5587bf6-fns4p:/# http http://payment:8080/actuator/echo
+HTTP/1.1 200 OK
+content-length: 40
+content-type: application/hal+json;charset=UTF-8
+date: Fri, 08 Apr 2022 06:15:25 GMT
+server: envoy
+x-envoy-upstream-service-time: 16
+
+payment-5bcbc89f89-pzqpx/192.168.50.150
+```
 
 -------------
 #### Autoscale (HPA)
@@ -462,8 +629,47 @@ buildspec.yml 파일
 
 
 ----------------------
-#### ConfigMap/Persistence Volume
+#### ConfigMap
 
+*1) configmap.yml 파일 생성*
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+	name: cinema-config
+	namespace: cinema
+data:
+	# 단일 key-value
+	max_reservation_per_person: "100"
+	ui_properties_file_name: "user-interface.properties"
+
+# kubectl apply -f cofingmap.yml
+```
+
+*2) deployment.yml 에 적용하기*
+```yaml
+spec:
+	containers:
+		- name: payment
+		image: 979050235289.dkr.ecr.ap-northeast-2.amazonaws.com/user03-payment:v1
+		ports:
+			- containerPort: 8080
+		env:
+			# cofingmap에 있는 단일 key-value
+			- name: MAX_RESERVATION_PER_PERSION
+			  valueFrom:
+				configMapKeyRef:
+					name: cinema-config
+					key: max_reservation_per_person
+			- name: UI_PROPERTIES_FILE_NAME
+			  valueFrom:
+				configMapKeyRef:
+					name: cinema-config
+					key: ui_properties_file_name
+
+# kubectl apply -f deployment.yml
+
+```
 
 --------------
 #### Self-healing (liveness probe)
