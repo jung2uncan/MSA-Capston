@@ -625,8 +625,101 @@ payment-5bcbc89f89-pzqpx/192.168.50.150
 
 
 --------------------
-#### Zero-downtime deploy (readiness probe)
+#### - Zero-downtime deploy (readiness probe)
 
+##### **ReadinessProbe**
+Pod의 생명주기중 **Pending 상태**에서의 동작, 서비스 요청에 응답가능한지 확인
+Service와 연결된 Pod를 확인하여 Readiness Probe에 대해 응답이 없거나 실패 응답을 보낸다면 해당 Pod를 사용불가능한 상태라고 판단하여 ***서비스 목록에서 제외***(App구동 순간에 트래픽이 흐르지 않게)
+
+![readiness](https://user-images.githubusercontent.com/74287598/162379634-7c2f4995-806a-4651-823e-50ec7cfeafeb.JPG)
+
+서비스 생성
+
+```yaml
+# service.yml
+apiVersion: v1
+kind: Service
+metadata:
+	name: svc-readiness
+spec:
+	selector:
+		app: readiness
+	ports:
+	- port: 8080
+		targetPort: 8080
+```
+
+Service에 연결할 Pod생성
+
+```yml
+spec:
+      containers:
+        - name: payment
+          image: 979050235289.dkr.ecr.ap-northeast-2.amazonaws.com/user03-payment:v1
+          ports:
+            - containerPort: 8080
+      volumes:
+        - name: volume
+          persistentVolumeClaim:
+            claimName: aws-efs
+          readinessProbe:  # killing -> restart
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 10
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 10
+```
+-----------
+#### - Self-healing (liveness probe)
+- Pod의 생명주기중 **Running 상태**에서의 동작함.
+컨테이너가 정상 실행중인지 확인(LivenessProbe를 설정하지 않으면 기본 상태값은 Success) -> 계속 HealthCheck
+컨테이너의 상태를 주기적으로 체크하여, 응답이 없다면 ***컨테이너를 자동으로 재시작***.
+
+![liveness](https://user-images.githubusercontent.com/74287598/162379258-61b3a4d0-6ab2-4a76-8c28-dace52320580.JPG)
+
+*Liveness Probe*는 컨테이너 상태가 비정상이라고 판단하면, **해당 Pod를 재시작**하는 반면 **ReadinessProbe는 해당 Pod를 사용할 수 없음으로 체크하고 서비스 등에서 제외함**
+
+Service생성
+
+```yml
+# service.yml
+apiVersion: v1
+kind: Service
+metadata:
+	name: svc-liveness
+spec:
+	selector:
+		app: liveness
+	ports:
+	- port: 8080
+		targetPort: 8080
+
+```
+
+Service에 연동할 Pod 생성
+
+```yml
+spec:
+      containers:
+        - name: payment
+          image: 979050235289.dkr.ecr.ap-northeast-2.amazonaws.com/user03-payment:v1
+          ports:
+            - containerPort: 8080
+      volumes:
+        - name: volume
+          persistentVolumeClaim:
+            claimName: aws-efs
+          livenessProbe:   # health Check 
+            httpGet:
+              path: '/actuator/health'
+              port: 8080
+            initialDelaySeconds: 120
+            timeoutSeconds: 2
+            periodSeconds: 5
+            failureThreshold: 5
+```
 
 ----------------------
 #### ConfigMap
@@ -648,28 +741,27 @@ data:
 
 *2) deployment.yml 에 적용하기*
 ```yaml
-spec:
-	containers:
-		- name: payment
-		image: 979050235289.dkr.ecr.ap-northeast-2.amazonaws.com/user03-payment:v1
-		ports:
-			- containerPort: 8080
-		env:
-			# cofingmap에 있는 단일 key-value
-			- name: MAX_RESERVATION_PER_PERSION
-			  valueFrom:
-				configMapKeyRef:
-					name: cinema-config
-					key: max_reservation_per_person
-			- name: UI_PROPERTIES_FILE_NAME
-			  valueFrom:
-				configMapKeyRef:
-					name: cinema-config
-					key: ui_properties_file_name
+    spec:
+      containers:
+        - name: payment
+          image: 979050235289.dkr.ecr.ap-northeast-2.amazonaws.com/user03-payment:v1
+          ports:
+            - containerPort: 8080
+          env:
+			      # cofingmap에 있는 단일 key-value
+            - name: MAX_RESERVATION_PER_PERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: cinema-config
+                  key: max_reservation_per_person
+            - name: UI_PROPERTIES_FILE_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: cinema-config
+                  key: ui_properties_file_name
 
 # kubectl apply -f deployment.yml
 
 ```
 
---------------
-#### Self-healing (liveness probe)
+
