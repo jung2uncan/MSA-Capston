@@ -1,0 +1,9 @@
+/home/project/message/src/main/java/cinema/ReservationConfirmed.java
+/home/project/message/src/main/java/cinema/MessageApplication.java
+/home/project/message/src/main/java/cinema/MessageController.java
+/home/project/message/src/main/java/cinema/config/kafka/KafkaProcessor.java
+/home/project/message/src/main/java/cinema/ReservationCancelled.java
+/home/project/message/src/main/java/cinema/PolicyHandler.java
+/home/project/message/src/main/java/cinema/AbstractEvent.java
+/home/project/message/src/main/java/cinema/MessageRepository.java
+/home/project/message/src/main/java/cinema/Message.java

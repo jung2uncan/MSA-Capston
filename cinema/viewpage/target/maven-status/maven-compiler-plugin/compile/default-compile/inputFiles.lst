@@ -1,0 +1,16 @@
+/home/project/viewpage/src/main/java/cinema/ReservationCancelled.java
+/home/project/viewpage/src/main/java/cinema/PaymentApproved.java
+/home/project/viewpage/src/main/java/cinema/config/kafka/KafkaProcessor.java
+/home/project/viewpage/src/main/java/cinema/PolicyHandler.java
+/home/project/viewpage/src/main/java/cinema/MovieDeleted.java
+/home/project/viewpage/src/main/java/cinema/MovieReserved.java
+/home/project/viewpage/src/main/java/cinema/MovieviewRepository.java
+/home/project/viewpage/src/main/java/cinema/MovieviewViewHandler.java
+/home/project/viewpage/src/main/java/cinema/ViewpageApplication.java
+/home/project/viewpage/src/main/java/cinema/MovieCancelled.java
+/home/project/viewpage/src/main/java/cinema/ReservationConfirmed.java
+/home/project/viewpage/src/main/java/cinema/Movieview.java
+/home/project/viewpage/src/main/java/cinema/AbstractEvent.java
+/home/project/viewpage/src/main/java/cinema/MovieRegistered.java
+/home/project/viewpage/src/main/java/cinema/MovieModified.java
+/home/project/viewpage/src/main/java/cinema/PaymentCancelled.java

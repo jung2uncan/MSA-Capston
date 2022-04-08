@@ -1,0 +1,75 @@
+server:
+  port: 8080
+---
+
+spring:
+  profiles: default
+  jpa:
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+        streams:
+          binder:
+            configuration:
+              default:
+                key:
+                  serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+                value:
+                  serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+      bindings:
+        event-in:
+          group: movie
+          destination: cinema
+          contentType: application/json
+        event-out:
+          destination: cinema
+          contentType: application/json  
+  feign:
+    hystrix:
+      enabled: true
+
+  #서비스로의 요청 실패가 임계치를 넘으면 대신 응답할 FallBackFactory 클래스를 설정할 수 있음
+  hystrix:
+    command:
+      # 전역설정
+      default:
+        execution.isolation.thread.timeoutInMilliseconds: 610   #610ms 초과하는 요청은 실패 처리
+
+
+logging:
+  level:
+    org.hibernate.type: trace
+    org.springframework.cloud: debug
+server:
+  port: 8082
+---
+
+spring:
+  profiles: docker
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: my-kafka.kafka.svc.cluster.local:9092
+        streams:
+          binder:
+            configuration:
+              default:
+                key:
+                  serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+                value:
+                  serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+      bindings:
+        event-in:
+          group: movie
+          destination: cinema
+          contentType: application/json
+        event-out:
+          destination: cinema
+          contentType: application/json
