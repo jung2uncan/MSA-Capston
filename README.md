@@ -620,10 +620,6 @@ x-envoy-upstream-service-time: 16
 payment-5bcbc89f89-pzqpx/192.168.50.150
 ```
 
--------------
-#### Autoscale (HPA)
-
-
 --------------------
 #### - Zero-downtime deploy (readiness probe)
 
@@ -748,7 +744,7 @@ data:
           ports:
             - containerPort: 8080
           env:
-			      # cofingmap에 있는 단일 key-value
+	    # cofingmap에 있는 단일 key-value
             - name: MAX_RESERVATION_PER_PERSION
               valueFrom:
                 configMapKeyRef:
@@ -763,5 +759,9 @@ data:
 # kubectl apply -f deployment.yml
 
 ```
+
+-------------
+#### Autoscale (HPA)
+
 
 
